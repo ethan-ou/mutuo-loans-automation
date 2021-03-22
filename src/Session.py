@@ -2,6 +2,12 @@ import requests
 from typing import List, Dict, Any
 import URL, Selector, Auth, Items, Barcodes, Asset
 
+class ImageRequest(TypedDict):
+    mimetype: str
+    ext: str
+    file: str
+    name: str
+
 def new():
     return requests.Session()
 
@@ -72,6 +78,11 @@ def check_barcodes(barcodes: List[str], session) -> List[str]:
     existing = Barcodes.get_barcodes(response.content)
     return Barcodes.find_matches(barcodes, existing)
 
-
-
-# TODO: Uploading images
+def get_image(url: str, session) -> Dict[str, Any]:
+    response = session.get(url)
+    return TypedDict('ImageRequest', {
+        'mimetype': response.headers['content-type']
+        'ext': mimetypes.guess_extension(response.headers['content-type']),
+        'file': response.content,
+        'name': Path(url).stem
+    })
