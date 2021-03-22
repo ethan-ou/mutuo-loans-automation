@@ -7,7 +7,7 @@ try:
 except ImportError:
     from mypy_extensions import TypedDict  # <=3.7
 
-class ItemPayload(TypedDict):
+class ItemPayload(TypedDict, total=False):
     item[name]: str
     item[summary]: str
     item[department_id]: int
@@ -44,6 +44,9 @@ def base_url() -> str:
 def page_url(page: int) -> str:
     return f"{url()}?page={page}"
 
+def item_url(url: str) -> str:
+    return f"{URL.base}{url}"
+
 def get_tags(html_string: str, base_url: str) -> List[Any]:
     tags = html.fromstring(html_string).xpath(f"//a[starts-with(@href, '{base_url}')]")
 
@@ -55,7 +58,7 @@ def find_item(items: List[Dict[str, Any]], name: str):
     return next((item for item in items if item['name'] == name), None)
 
 # Check for dict
-def find_new_items(items, existing_items):
+def find_new_items(items: List[Dict[str, Any]], existing_items):
     return [item for item in items if not find_item(existing_items, item['name'])]
 
 def create_payload(name="", summary="", department_id=16, weight="", replacement_cost="", 
@@ -84,7 +87,7 @@ information="", special_conditions="", commit="Save", utf8: "✓", authenticity_
         'authenticity_token': authenticity_token,
     })
 
-def create_item(id=0, name="", url=""):
+def create_item(id=-1, name="", url=""):
     return TypedDict('Item', {
         'id': id,
         'url': url,
