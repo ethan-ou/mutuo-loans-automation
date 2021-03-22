@@ -32,8 +32,6 @@ class NextAsset(TypedDict):
     barcode: str
     name: str
 
-required_keys = ["name", "summary", "replacement_cost", "quantity", "make", "model", "barcode_stem"]
-
 def check_csv(csv_list, required_keys) -> None:
     csv_keys = set.intersection(*tuple(set(line.keys()) for line in csv_list))
     missing_keys = csv_keys ^ set(required_keys)
