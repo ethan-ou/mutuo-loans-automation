@@ -1,6 +1,15 @@
 import requests
+import mimetypes
+import time
+from pathlib import Path
 from typing import List, Dict, Any
 import URL, Selector, Auth, Items, Barcodes, Asset
+
+try:
+    from typing import TypedDict  # >=3.8
+except ImportError:
+    from mypy_extensions import TypedDict  # <=3.7
+
 
 class ImageRequest(TypedDict):
     mimetype: str
@@ -21,6 +30,8 @@ def authenticate(username: str, password: str, session) -> None:
     print("Logging In...")
 
 def get_items(session) -> List[Any]:
+    print("Getting Items...")
+    
     all_items = []
     page = 1
     while True:
@@ -42,7 +53,7 @@ def get_assets(item: Dict[str, Any], session) -> List[Dict[str, Any]]:
     return [Asset.create_item(
         id=id,
         barcode=Asset.get_barcode(response.content, id),
-        name=Asset.get_name(response.content, id),
+        name=Asset.get_name(response.content, id, item['url']),
     ) for id in ids]
 
 def add_item(item: Dict[str, Any], session) -> None:
@@ -59,7 +70,7 @@ def add_items(items: List[Dict[str, Any]], session) -> None:
         add_item(item, session)
         time.sleep(0.5)
 
-def add_asset(asset: Dict[str, Any], item, session) -> None:
+def add_asset(item, asset: Dict[str, Any], session) -> None:
     response = session.get(Items.item_url(item['url']))
     authenticity_token = Selector.auth_token(response.content)
 
@@ -68,20 +79,20 @@ def add_asset(asset: Dict[str, Any], item, session) -> None:
 
     print(f"Adding Asset for {item['name']}. Barcode: {payload['asset[barcode]']}")
 
-def add_assets(assets: List[Dict[str, Any]], item, session) -> None:
+def add_assets(item, assets: List[Dict[str, Any]], session) -> None:
     for asset in assets:
-        add_asset(asset, item, session)
+        add_asset(item, asset, session)
         time.sleep(0.5)
 
 def check_barcodes(barcodes: List[str], session) -> List[str]:
-    response = session.get(Barcode.url())
+    response = session.get(Barcodes.url())
     existing = Barcodes.get_barcodes(response.content)
     return Barcodes.find_matches(barcodes, existing)
 
 def get_image(url: str, session) -> Dict[str, Any]:
     response = session.get(url)
     return TypedDict('ImageRequest', {
-        'mimetype': response.headers['content-type']
+        'mimetype': response.headers['content-type'],
         'ext': mimetypes.guess_extension(response.headers['content-type']),
         'file': response.content,
         'name': Path(url).stem

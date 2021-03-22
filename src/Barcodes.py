@@ -13,7 +13,7 @@ def get_barcodes(html_string: str) -> List[str]:
     return list(filter(None, [barcode.replace('\n','').strip() for barcode in raw]))
 
 def find_matches(barcodes: List[str], existing_barcodes: List[str]):
-    return set(barcodes).intersection(existing_barcodes)
+    return list(set(barcodes).intersection(existing_barcodes))
 
 def warn_matches(matches: List[str]):
     for match in matches:

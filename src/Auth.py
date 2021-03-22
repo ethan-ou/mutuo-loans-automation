@@ -21,7 +21,7 @@ def create_payload(zid="", password="", commit="Login", utf8="✓", authenticity
     return TypedDict('AuthPayload', {
         'user_session[zid]': zid, 
         'user_session[password]': password, 
-        'commit': commit
+        'commit': commit,
         "authenticity_token": authenticity_token,
         "utf-8": utf8,
     })

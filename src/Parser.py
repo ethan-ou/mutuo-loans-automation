@@ -15,19 +15,6 @@ class CSVKeys(TypedDict):
     model: str
     barcode_stem: str
 
-# Matches subset of ItemPayload
-class CSVItems(TypedDict):
-    item[name]: str
-    item[summary]: str
-    item[replacement_cost]: str
-
-# Matches subset of AssetPayload
-class CSVAssets(TypedDict):
-    asset[name]: str
-    asset[make]: str
-    asset[model]: str
-    asset[barcode]: str
-
 class NextAsset(TypedDict):
     barcode: str
     name: str

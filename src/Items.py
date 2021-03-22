@@ -7,25 +7,25 @@ try:
 except ImportError:
     from mypy_extensions import TypedDict  # <=3.7
 
-class ItemPayload(TypedDict, total=False):
-    item[name]: str
-    item[summary]: str
-    item[department_id]: int
-    item[weight]: str
-    item[replacement_cost]: str
-    item[off_campus]: int
-    item[publicly_viewable]: int
-    item[online_booking_available]: int
-    item[unique_assets]: int
-    item[maximum_loan_duration_multiplyer]: str
-    item[maximum_loan_duration_interval]: str
-    item[default_loan_duration_multiplyer]: str
-    item[default_loan_duration_interval]: str
-    item[information]: str
-    item[special_conditions]: str
-    commit: str
-    utf8: str
-    authenticity_token: str
+# class ItemPayload(TypedDict, total=False):
+#     item[name]: str
+#     item[summary]: str
+#     item[department_id]: int
+#     item[weight]: str
+#     item[replacement_cost]: str
+#     item[off_campus]: int
+#     item[publicly_viewable]: int
+#     item[online_booking_available]: int
+#     item[unique_assets]: int
+#     item[maximum_loan_duration_multiplyer]: str
+#     item[maximum_loan_duration_interval]: str
+#     item[default_loan_duration_multiplyer]: str
+#     item[default_loan_duration_interval]: str
+#     item[information]: str
+#     item[special_conditions]: str
+#     commit: str
+#     utf8: str
+#     authenticity_token: str
 
 class Item(TypedDict):
     id: int
@@ -54,18 +54,18 @@ def get_tags(html_string: str, base_url: str) -> List[Any]:
     return [tag for tag in tags if tag.get('href').replace(base_url(), '').isdigit()]
 
 # Check for dict
-def find_item(items: List[Dict[str, Any]], name: str):
+def find_item(name: str, items: List[Dict[str, Any]]) -> Dict[str, Any]:
     return next((item for item in items if item['name'] == name), None)
 
 # Check for dict
-def find_new_items(items: List[Dict[str, Any]], existing_items):
-    return [item for item in items if not find_item(existing_items, item['name'])]
+def find_new_items(items: List[Dict[str, Any]], existing_items) -> List[Dict[str, Any]]:
+    return [item for item in items if not find_item(item['name'], existing_items)]
 
 def create_payload(name="", summary="", department_id=16, weight="", replacement_cost="", 
 off_campus=1, publicly_viewable=1, online_booking_available=1, unique_assets=1, 
 maximum_loan_duration_multiplyer="3", maximum_loan_duration_interval="Days", 
 default_loan_duration_multiplyer="3", default_loan_duration_interval="Days",
-information="", special_conditions="", commit="Save", utf8: "✓", authenticity_token="") -> Dict[str, Any]:
+information="", special_conditions="", commit="Save", authenticity_token="") -> Dict[str, Any]:
     return TypedDict('ItemPayload', {
         'item[name]': name,
         'item[summary]': summary,
@@ -83,7 +83,7 @@ information="", special_conditions="", commit="Save", utf8: "✓", authenticity_
         'item[information]': information,
         'item[special_conditions]': special_conditions,
         'commit': commit,
-        'utf8': utf8,
+        'utf8': "✓",
         'authenticity_token': authenticity_token,
     })
 

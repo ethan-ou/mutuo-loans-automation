@@ -7,16 +7,16 @@ try:
 except ImportError:
     from mypy_extensions import TypedDict  # <=3.7
 
-class AssetPayload(TypedDict, total=False):
-    asset[name]: str
-    asset[make]: str
-    asset[model]: str
-    asset[serial_number]: str
-    asset[barcode]: str
-    asset[item_attributes][off_campus]: int
-    asset[item_attributes][id]: int
-    utf8: str
-    authenticity_token: str
+# class AssetPayload(TypedDict, total=False):
+#     asset[name]: str
+#     asset[make]: str
+#     asset[model]: str
+#     asset[serial_number]: str
+#     asset[barcode]: str
+#     asset[item_attributes][off_campus]: int
+#     asset[item_attributes][id]: int
+#     utf8: str
+#     authenticity_token: str
 
 class AssetItem(TypedDict):
     id: int
@@ -37,10 +37,10 @@ def get_barcode(html_string: str, asset_id: int) -> str:
 
 # Gets name from assets table. This may change in the future.
 def get_name(html_string: str, asset_id: int, item_url: str) -> str:
-    return html.fromstring(html_string).xpath(f"//div[@id='assets']//tr[starts-with(@id, 'asset_{asset_id}')]//td[not(@class)]//a[starts-with(@href, '{item['url']}')]/text()")[0]
+    return html.fromstring(html_string).xpath(f"//div[@id='assets']//tr[starts-with(@id, 'asset_{asset_id}')]//td[not(@class)]//a[starts-with(@href, '{item_url}')]/text()")[0]
 
 def create_payload(name="", make="", model="", serial_number="", barcode="",
-off_campus=1, id=-1, utf8: "✓", authenticity_token="") -> Dict[str, Any]:
+off_campus=1, id=-1, authenticity_token="") -> Dict[str, Any]:
     return TypedDict('AssetPayload', {
         'asset[name]': name,
         'asset[make]': make,
@@ -49,7 +49,7 @@ off_campus=1, id=-1, utf8: "✓", authenticity_token="") -> Dict[str, Any]:
         'asset[barcode]': barcode,
         'asset[item_attributes][off_campus]': off_campus,
         'asset[item_attributes][id]': id,
-        'utf8': utf8,
+        'utf8': "✓",
         'authenticity_token': authenticity_token,
     })
 
