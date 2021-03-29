@@ -1,24 +1,6 @@
 from typing import List, Dict, Any
 import Asset
 
-try:
-    from typing import TypedDict  # >=3.8
-except ImportError:
-    from mypy_extensions import TypedDict  # <=3.7
-
-class CSVKeys(TypedDict):
-    name: str
-    summary: str
-    replacement_cost: str
-    quantity: str
-    make: str
-    model: str
-    barcode_stem: str
-
-class NextAsset(TypedDict):
-    barcode: str
-    name: str
-
 def check_csv(csv_list, required_keys) -> None:
     csv_keys = set.intersection(*tuple(set(line.keys()) for line in csv_list))
     missing_keys = csv_keys ^ set(required_keys)

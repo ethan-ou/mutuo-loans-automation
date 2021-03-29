@@ -1,4 +1,4 @@
-import Session, Reader, Parser, Items, Barcodes
+import Session, Reader, Parser, Items, Barcodes, Util
 
 required_keys = ["name", "summary", "replacement_cost", "quantity", "make", "model", "barcode_stem"]
 
@@ -16,11 +16,12 @@ def add_items_assets_from_csv(file: str, username: str, password: str):
     # Add New Items
     current_items = Session.get_items(session)
     new_items = Items.find_new_items(csv_list, current_items)
-    item_payloads = Parser.create_items(new_items)
-    Session.add_items(item_payloads, session)
+    new_item_payloads = Parser.create_items(new_items)
+    Session.add_items(new_item_payloads, session)
     
     # Add Assets
     current_items = Session.get_items(session)
+
     for item in csv_list:
         selected = Items.find_item(name=item['name'], items=current_items)
         assets = Session.get_assets(selected, session)
@@ -31,6 +32,8 @@ def add_items_assets_from_csv(file: str, username: str, password: str):
         # Check Barcodes
         Barcodes.warn_matches(Session.check_barcodes(barcodes=[asset['asset[barcode]'] for asset in asset_payloads], session=session))
 
-        Session.add_assets(item=item, assets=asset_payloads, session=session)
+        Session.add_assets(item=selected, assets=asset_payloads, session=session)
 
+        barcode_images = Session.get_barcodes(barcodes=[asset['asset[barcode]'] for asset in asset_payloads], session=session)
 
+        Util.create_images(barcode_images, "barcodes")

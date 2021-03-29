@@ -5,18 +5,6 @@ from pathlib import Path
 from typing import List, Dict, Any
 import URL, Selector, Auth, Items, Barcodes, Asset
 
-try:
-    from typing import TypedDict  # >=3.8
-except ImportError:
-    from mypy_extensions import TypedDict  # <=3.7
-
-
-class ImageRequest(TypedDict):
-    mimetype: str
-    ext: str
-    file: str
-    name: str
-
 def new():
     return requests.Session()
 
@@ -42,7 +30,7 @@ def get_items(session) -> List[Any]:
         if len(items) == 0:
             return all_items
 
-        all_items.append(items)
+        all_items.extend(items)
         time.sleep(0.5)
         page = page + 1
 
@@ -60,7 +48,11 @@ def add_item(item: Dict[str, Any], session) -> None:
     response = session.get(Items.new_url())
     authenticity_token = Selector.auth_token(response.content)
 
-    payload = Items.create_payload(authenticity_token=authenticity_token).update(item)
+    payload = Items.create_payload(authenticity_token=authenticity_token)
+    payload.update(item)
+
+    assert payload != None, "No Items Found!"
+
     session.post(Items.url(), params=payload)
 
     print(f"Added Item: {payload['item[name]']}")
@@ -74,7 +66,11 @@ def add_asset(item, asset: Dict[str, Any], session) -> None:
     response = session.get(Items.item_url(item['url']))
     authenticity_token = Selector.auth_token(response.content)
 
-    payload = Asset.create_payload(id=item['id'], authenticity_token=authenticity_token).update(asset)
+    payload = Asset.create_payload(id=item['id'], authenticity_token=authenticity_token)
+    payload.update(asset)
+
+    assert payload != None, "No Assets Found!"
+
     session.post(Asset.url(item['url']), params=payload)
 
     print(f"Adding Asset for {item['name']}. Barcode: {payload['asset[barcode]']}")
@@ -91,9 +87,21 @@ def check_barcodes(barcodes: List[str], session) -> List[str]:
 
 def get_image(url: str, session) -> Dict[str, Any]:
     response = session.get(url)
-    return TypedDict('ImageRequest', {
+    return {
         'mimetype': response.headers['content-type'],
         'ext': mimetypes.guess_extension(response.headers['content-type']),
         'file': response.content,
         'name': Path(url).stem
-    })
+    }
+
+def get_barcode(barcode, session) -> Dict[str, Any]:
+    return get_image(Barcodes.barcode_url(barcode), session)
+
+def get_barcodes(barcodes, session) -> List[Dict[str, Any]]:
+    all_barcodes = []
+
+    for barcode in barcodes:
+        all_barcodes.append(get_barcode(barcode, session))
+        time.sleep(0.5)
+
+    return all_barcodes
