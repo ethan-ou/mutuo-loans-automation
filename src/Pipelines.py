@@ -34,6 +34,8 @@ def add_items_assets_from_csv(file: str, username: str, password: str):
 
         Session.add_assets(item=selected, assets=asset_payloads, session=session)
 
+        # Barcodes
         barcode_images = Session.get_barcodes(barcodes=[asset['asset[barcode]'] for asset in asset_payloads], session=session)
-
-        Util.create_images(barcode_images, "barcodes")
+        label_images = Util.create_barcode_labels_adapter(barcode_images, item['name'])
+        Util.create_images(label_images, "barcodes")
+        
