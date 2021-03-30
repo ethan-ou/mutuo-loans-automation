@@ -1,4 +1,4 @@
-import Session, Reader, Parser, Items, Barcodes, Util
+import Session, Reader, Parser, Items, Barcodes, Util, Export
 
 required_keys = ["name", "summary", "replacement_cost", "quantity", "make", "model", "barcode_stem"]
 
@@ -6,7 +6,7 @@ def check_valid(file: str):
     csv_list = Reader.read_csv(file)
     Parser.check_csv(csv_list, required_keys)
 
-def add_items_assets_from_csv(file: str, username: str, password: str):
+def add_items_assets_from_csv(file: str, username: str, password: str, output_folder="barcodes"):
     csv_list = Reader.read_csv(file)
     Parser.check_csv(csv_list, required_keys)
 
@@ -21,6 +21,7 @@ def add_items_assets_from_csv(file: str, username: str, password: str):
     
     # Add Assets
     current_items = Session.get_items(session)
+    barcode_export = Export.BarcodeExport()
 
     for item in csv_list:
         selected = Items.find_item(name=item['name'], items=current_items)
@@ -34,8 +35,13 @@ def add_items_assets_from_csv(file: str, username: str, password: str):
 
         Session.add_assets(item=selected, assets=asset_payloads, session=session)
 
-        # Barcodes
-        barcode_images = Session.get_barcodes(barcodes=[asset['asset[barcode]'] for asset in asset_payloads], session=session)
-        label_images = Util.create_barcode_labels_adapter(barcode_images, item['name'])
-        Util.create_images(label_images, "barcodes")
+        # Barcode CSV Export
+        barcode_export.add_items(item['name'], barcodes=[asset['asset[barcode]'] for asset in asset_payloads])
         
+        # Custom Barcode Image Export
+        # barcode_images = Session.get_barcodes(barcodes=[asset['asset[barcode]'] for asset in asset_payloads], session=session)
+        # label_images = Util.create_barcode_labels_adapter(barcode_images, item['name'])
+        # Util.create_images(label_images, "barcodes")
+    
+    Export.check_folder(output_folder)
+    barcode_export.create_csv(path=Export.create_path(name="Barcodes", extension=".csv", folder="barcodes"))
