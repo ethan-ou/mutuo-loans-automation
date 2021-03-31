@@ -8,14 +8,15 @@ import URL, Selector, Auth, Items, Barcodes, Asset
 def new():
     return requests.Session()
 
-def authenticate(username: str, password: str, session) -> None:
+def authenticate(username: str, password: str, session):
     response = session.get(URL.base)
     authenticity_token = Selector.auth_token(response.content)
     
     payload = Auth.create_payload(zid=username, password=password, authenticity_token=authenticity_token)
-    session.post(Auth.url(), params=payload)
+    response = session.post(Auth.url(), params=payload)
 
     print("Logging In...")
+    return response
 
 def get_items(session) -> List[Any]:
     print("Getting Items...")
@@ -44,7 +45,7 @@ def get_assets(item: Dict[str, Any], session) -> List[Dict[str, Any]]:
         name=Asset.get_name(response.content, id, item['url']),
     ) for id in ids]
 
-def add_item(item: Dict[str, Any], session) -> None:
+def add_item(item: Dict[str, Any], session):
     response = session.get(Items.new_url())
     authenticity_token = Selector.auth_token(response.content)
 
@@ -53,16 +54,17 @@ def add_item(item: Dict[str, Any], session) -> None:
 
     assert payload != None, "No Items Found!"
 
-    session.post(Items.url(), params=payload)
+    response = session.post(Items.url(), params=payload)
 
     print(f"Added Item: {payload['item[name]']}")
+    return response
 
 def add_items(items: List[Dict[str, Any]], session) -> None:
     for item in items:
         add_item(item, session)
         time.sleep(0.5)
 
-def add_asset(item, asset: Dict[str, Any], session) -> None:
+def add_asset(item, asset: Dict[str, Any], session):
     response = session.get(Items.item_url(item['url']))
     authenticity_token = Selector.auth_token(response.content)
 
@@ -71,9 +73,10 @@ def add_asset(item, asset: Dict[str, Any], session) -> None:
 
     assert payload != None, "No Assets Found!"
 
-    session.post(Asset.url(item['url']), params=payload)
+    response = session.post(Asset.url(item['url']), params=payload)
 
     print(f"Adding Asset for {item['name']}. Barcode: {payload['asset[barcode]']}")
+    return response
 
 def add_assets(item, assets: List[Dict[str, Any]], session) -> None:
     for asset in assets:
@@ -85,14 +88,24 @@ def check_barcodes(barcodes: List[str], session) -> List[str]:
     existing = Barcodes.get_barcodes(response.content)
     return Barcodes.find_matches(barcodes, existing)
 
-def get_image(url: str, session) -> Dict[str, Any]:
+def get_image(url: str, session, name=None) -> Dict[str, Any]:
     response = session.get(url)
+    final_name = Path(url).stem if not name else name
+
     return {
         'mimetype': response.headers['content-type'],
         'ext': mimetypes.guess_extension(response.headers['content-type']),
         'file': response.content,
-        'name': Path(url).stem
+        'name': final_name
     }
+
+def get_images(urls: List[str], session) -> List[Dict[str, Any]]:
+    all_images = []
+    for url in urls:
+        all_urls.append(get_image(url, session))
+        time.sleep(0.5)
+    
+    return all_images
 
 def get_barcode(barcode, session) -> Dict[str, Any]:
     return get_image(Barcodes.barcode_url(barcode), session)

@@ -4,11 +4,15 @@ from pathlib import Path
 from PIL import Image, ImageFont, ImageDraw
 import io
 import Export
+import imghdr
 
 def create_image(image_dict: Dict[str, Any], name="", folder="") -> None:
     final_name = name if name != "" else image_dict['name']
 
-    path = Export.create_path(name=final_name, extension=image_dict['ext'], folder=folder)
+    # Checks file for extension if not found
+    final_extension = f".{imghdr.what(None, image_dict['file'])}" if image_dict['ext'] is None else image_dict['ext']
+    
+    path = Export.create_path(name=final_name, extension=final_extension, folder=folder)
     if folder != "":
         Path(folder).mkdir(parents=True, exist_ok=True)
     

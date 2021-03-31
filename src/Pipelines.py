@@ -2,17 +2,13 @@ import Session, Reader, Parser, Items, Barcodes, Util, Export
 
 required_keys = ["name", "summary", "replacement_cost", "quantity", "make", "model", "barcode_stem"]
 
-def check_valid(file: str):
-    csv_list = Reader.read_csv(file)
-    Parser.check_csv(csv_list, required_keys)
-
 def add_items_assets_from_csv(file: str, username: str, password: str, output_folder="barcodes"):
     csv_list = Reader.read_csv(file)
     Parser.check_csv(csv_list, required_keys)
 
     session = Session.new()
-    Session.authenticate(username=username, password=password, session=session)
-    
+    response = Session.authenticate(username=username, password=password, session=session)
+
     # Add New Items
     current_items = Session.get_items(session)
     new_items = Items.find_new_items(csv_list, current_items)
@@ -22,7 +18,6 @@ def add_items_assets_from_csv(file: str, username: str, password: str, output_fo
     # Add Assets
     current_items = Session.get_items(session)
     barcode_export = Export.BarcodeExport()
-
     for item in csv_list:
         selected = Items.find_item(name=item['name'], items=current_items)
         assets = Session.get_assets(selected, session)
@@ -45,3 +40,11 @@ def add_items_assets_from_csv(file: str, username: str, password: str, output_fo
     
     Export.check_folder(output_folder)
     barcode_export.create_csv(path=Export.create_path(name="Barcodes", extension=".csv", folder="barcodes"))
+
+def download_images_from_csv(file: str, output_folder="images"):
+    session = Session.new()
+
+    csv_list = Reader.read_csv(file)
+    for item in csv_list:
+        image = Session.get_image(url=item['image_url'], session=session, name=item['name'])
+        Util.create_image(image_dict=image, folder=output_folder)
