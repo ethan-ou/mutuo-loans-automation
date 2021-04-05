@@ -1,6 +1,6 @@
 import Session, Reader, Parser, Items, Barcodes, Util, Export
 
-required_keys = ["name", "summary", "replacement_cost", "quantity", "make", "model", "barcode_stem"]
+required_keys = ["name", "summary", "replacement_cost", "quantity", "make", "model", "barcode_stem", "image_url"]
 
 def add_items_assets_from_csv(file: str, username: str, password: str, output_folder="barcodes"):
     csv_list = Reader.read_csv(file)
@@ -40,6 +40,8 @@ def add_items_assets_from_csv(file: str, username: str, password: str, output_fo
     
     Export.check_folder(output_folder)
     barcode_export.create_csv(path=Export.create_path(name="Barcodes", extension=".csv", folder="barcodes"))
+
+    download_images_from_csv(file=file, output_folder="images")
 
 def download_images_from_csv(file: str, output_folder="images"):
     session = Session.new()

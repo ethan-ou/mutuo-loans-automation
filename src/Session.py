@@ -102,7 +102,7 @@ def get_image(url: str, session, name=None) -> Dict[str, Any]:
 def get_images(urls: List[str], session) -> List[Dict[str, Any]]:
     all_images = []
     for url in urls:
-        all_urls.append(get_image(url, session))
+        all_images.append(get_image(url, session))
         time.sleep(0.5)
     
     return all_images
