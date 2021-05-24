@@ -1,6 +1,6 @@
 base = "https://science.loans.unsw.edu.au"
 user_session = "/user_session"
-admin = "/rc/admin"
+admin = "/set/admin"
 items = "/items"
 barcodes = "/barcodes"
 new = "/new"
